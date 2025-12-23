@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles, Brain, Target, Play, ChevronRight } from 'lucide-react';
+import { ArrowRight, Sparkles, Brain, Target, Play, ChevronRight, ClipboardList } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Scene3D from './Scene3D';
 
@@ -94,21 +94,21 @@ export default function Hero() {
             <Button 
               variant="hero" 
               size="xl" 
-              onClick={() => navigate('/advisor')}
+              onClick={() => navigate('/assessment')}
               className="group text-lg px-10 h-16 rounded-2xl shadow-glow-intense"
             >
-              <Sparkles className="w-5 h-5" />
-              Start AI Consultation
+              <ClipboardList className="w-5 h-5" />
+              Take Career Assessment
               <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
             </Button>
             <Button 
               variant="heroOutline" 
               size="xl"
-              onClick={() => document.querySelector('#features')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => navigate('/advisor')}
               className="text-lg px-10 h-16 rounded-2xl group"
             >
-              <Play className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              Watch Demo
+              <Sparkles className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              Chat with AI
             </Button>
           </motion.div>
 
