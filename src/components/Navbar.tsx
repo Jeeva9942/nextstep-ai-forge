@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Compass, Sparkles, LogOut, User } from 'lucide-react';
+import { Menu, X, Compass, Sparkles, LogOut, User, ClipboardList } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
@@ -32,6 +32,7 @@ export default function Navbar() {
     { name: 'Features', href: '#features' },
     { name: 'How It Works', href: '#how-it-works' },
     { name: 'Reviews', href: '#reviews' },
+    { name: 'Assessment', href: '/assessment', icon: ClipboardList },
     { name: 'AI Advisor', href: '/advisor' },
   ];
 
@@ -59,12 +60,12 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
               <a
                 key={link.name}
                 href={link.href}
-                className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium relative group py-2"
+                className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium relative group py-2 flex items-center gap-1.5"
                 onClick={(e) => {
                   if (link.href.startsWith('#')) {
                     e.preventDefault();
@@ -75,6 +76,7 @@ export default function Navbar() {
                   }
                 }}
               >
+                {link.icon && <link.icon className="w-4 h-4" />}
                 {link.name}
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-primary transition-all duration-300 group-hover:w-full rounded-full" />
               </a>
@@ -143,7 +145,7 @@ export default function Navbar() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className="block text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium py-2"
+                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium py-2"
                     onClick={(e) => {
                       setIsOpen(false);
                       if (link.href.startsWith('#')) {
@@ -157,6 +159,7 @@ export default function Navbar() {
                       }
                     }}
                   >
+                    {link.icon && <link.icon className="w-4 h-4" />}
                     {link.name}
                   </motion.a>
                 ))}
