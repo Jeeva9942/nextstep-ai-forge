@@ -7,9 +7,32 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 type Message = { role: 'user' | 'assistant'; content: string };
 
+// Strip markdown symbols from text
+function cleanMarkdown(text: string): string {
+  return text
+    .replace(/\*\*/g, '')
+    .replace(/\*/g, '')
+    .replace(/#{1,6}\s/g, '')
+    .replace(/`{3}[\s\S]*?`{3}/g, '')
+    .replace(/`/g, '')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/^[-*+]\s/gm, '• ')
+    .replace(/^\d+\.\s/gm, '')
+    .trim();
+}
+
+// Limit text to approximately 200 lines
+function limitLines(text: string, maxLines: number = 200): string {
+  const lines = text.split('\n');
+  if (lines.length > maxLines) {
+    return lines.slice(0, maxLines).join('\n') + '\n...';
+  }
+  return text;
+}
+
 export default function Advisor() {
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: "Hello! I'm your AI Career Advisor. I can help you explore career paths, analyze your skills, and provide personalized guidance. What would you like to discuss about your career today?" }
+    { role: 'assistant', content: "Hello! I am your AI Career Advisor. I can help you explore career paths, analyze your skills, and provide personalized guidance. What would you like to discuss about your career today?" }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -57,9 +80,10 @@ export default function Advisor() {
               const content = data.choices?.[0]?.delta?.content;
               if (content) {
                 assistantContent += content;
+                const cleanedContent = limitLines(cleanMarkdown(assistantContent));
                 setMessages(prev => {
                   const newMsgs = [...prev];
-                  newMsgs[newMsgs.length - 1] = { role: 'assistant', content: assistantContent };
+                  newMsgs[newMsgs.length - 1] = { role: 'assistant', content: cleanedContent };
                   return newMsgs;
                 });
               }
@@ -68,7 +92,7 @@ export default function Advisor() {
         }
       }
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'assistant', content: "I'm having trouble connecting. Please try again." }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: "I am having trouble connecting. Please try again." }]);
     } finally {
       setIsLoading(false);
     }
@@ -80,12 +104,17 @@ export default function Advisor() {
       <header className="glass-nav border-b border-border p-4">
         <div className="container flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/')} className="text-muted-foreground hover:text-foreground">
+            <button onClick={() => navigate('/')} className="text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2">
-              <Compass className="w-6 h-6 text-primary" />
-              <span className="font-display font-bold">AI Career Advisor</span>
+              <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center">
+                <Compass className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <div>
+                <span className="font-display font-bold block">AI Career Advisor</span>
+                <span className="text-xs text-muted-foreground">Powered by AI</span>
+              </div>
             </div>
           </div>
         </div>
@@ -103,16 +132,16 @@ export default function Advisor() {
                 className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}
               >
                 {msg.role === 'assistant' && (
-                  <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center flex-shrink-0">
-                    <Bot className="w-4 h-4 text-primary-foreground" />
+                  <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center flex-shrink-0 shadow-glow">
+                    <Bot className="w-5 h-5 text-primary-foreground" />
                   </div>
                 )}
-                <div className={`max-w-[80%] rounded-2xl p-4 ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'glass-card'}`}>
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                <div className={`max-w-[80%] rounded-2xl p-4 ${msg.role === 'user' ? 'bg-gradient-primary text-primary-foreground' : 'glass-card'}`}>
+                  <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                 </div>
                 {msg.role === 'user' && (
-                  <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
-                    <User className="w-4 h-4" />
+                  <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
+                    <User className="w-5 h-5" />
                   </div>
                 )}
               </motion.div>
@@ -120,11 +149,11 @@ export default function Advisor() {
           </AnimatePresence>
           {isLoading && messages[messages.length - 1]?.role === 'user' && (
             <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
-                <Loader2 className="w-4 h-4 text-primary-foreground animate-spin" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow">
+                <Loader2 className="w-5 h-5 text-primary-foreground animate-spin" />
               </div>
               <div className="glass-card rounded-2xl p-4">
-                <div className="flex gap-1">
+                <div className="flex gap-1.5">
                   <span className="w-2 h-2 bg-primary rounded-full animate-bounce" />
                   <span className="w-2 h-2 bg-primary rounded-full animate-bounce animation-delay-200" />
                   <span className="w-2 h-2 bg-primary rounded-full animate-bounce animation-delay-400" />
@@ -137,14 +166,23 @@ export default function Advisor() {
       </div>
 
       {/* Input */}
-      <div className="border-t border-border p-4">
+      <div className="border-t border-border p-4 bg-card/50 backdrop-blur-xl">
         <div className="container max-w-3xl">
-          <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="flex gap-2">
-            <Input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about careers, skills, industry trends..." className="flex-1" disabled={isLoading} />
-            <Button type="submit" variant="hero" disabled={isLoading || !input.trim()}>
-              <Send className="w-4 h-4" />
+          <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="flex gap-3">
+            <Input 
+              value={input} 
+              onChange={(e) => setInput(e.target.value)} 
+              placeholder="Ask about careers, skills, industry trends..." 
+              className="flex-1 h-12 bg-secondary/50 border-border/50 focus:border-primary" 
+              disabled={isLoading} 
+            />
+            <Button type="submit" variant="hero" size="lg" disabled={isLoading || !input.trim()} className="h-12 px-6">
+              <Send className="w-5 h-5" />
             </Button>
           </form>
+          <p className="text-xs text-muted-foreground text-center mt-3">
+            AI can make mistakes. Verify important career decisions with professionals.
+          </p>
         </div>
       </div>
     </div>

@@ -11,6 +11,7 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Features', href: '#features' },
     { name: 'How It Works', href: '#how-it-works' },
+    { name: 'Reviews', href: '#reviews' },
     { name: 'AI Advisor', href: '/advisor' },
   ];
 
@@ -21,8 +22,9 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
             <div className="relative">
-              <Compass className="w-8 h-8 text-primary transition-transform duration-300 group-hover:rotate-45" />
-              <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow group-hover:shadow-glow-intense transition-shadow duration-300">
+                <Compass className="w-5 h-5 text-primary-foreground transition-transform duration-300 group-hover:rotate-45" />
+              </div>
             </div>
             <span className="font-display text-xl font-bold text-foreground">
               Career<span className="text-gradient-primary">Path</span>
@@ -35,7 +37,7 @@ export default function Navbar() {
               <a
                 key={link.name}
                 href={link.href}
-                className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium"
+                className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium relative group"
                 onClick={(e) => {
                   if (link.href.startsWith('#')) {
                     e.preventDefault();
@@ -47,6 +49,7 @@ export default function Navbar() {
                 }}
               >
                 {link.name}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
               </a>
             ))}
           </div>
