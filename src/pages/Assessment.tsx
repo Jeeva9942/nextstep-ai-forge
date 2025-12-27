@@ -194,9 +194,10 @@ Keep the response clear, encouraging, and actionable.`;
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="high-school">High School</SelectItem>
-                      <SelectItem value="bachelors">Bachelor's Degree</SelectItem>
-                      <SelectItem value="masters">Master's Degree</SelectItem>
-                      <SelectItem value="phd">PhD</SelectItem>
+                      <SelectItem value="diploma">Diploma</SelectItem>
+                      <SelectItem value="undergraduate">Undergraduate</SelectItem>
+                      <SelectItem value="postgraduate">Postgraduate</SelectItem>
+                      <SelectItem value="doctorate">Doctorate / PhD</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
@@ -368,11 +369,11 @@ Keep the response clear, encouraging, and actionable.`;
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="30-50k">$30K - $50K</SelectItem>
-                      <SelectItem value="50-75k">$50K - $75K</SelectItem>
-                      <SelectItem value="75-100k">$75K - $100K</SelectItem>
-                      <SelectItem value="100-150k">$100K - $150K</SelectItem>
-                      <SelectItem value="150k+">$150K+</SelectItem>
+                      <SelectItem value="3-5L">₹3L - ₹5L</SelectItem>
+                      <SelectItem value="5-8L">₹5L - ₹8L</SelectItem>
+                      <SelectItem value="8-12L">₹8L - ₹12L</SelectItem>
+                      <SelectItem value="12-20L">₹12L - ₹20L</SelectItem>
+                      <SelectItem value="20L+">₹20L+</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

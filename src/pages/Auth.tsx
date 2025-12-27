@@ -218,28 +218,6 @@ export default function Auth() {
               </motion.div>
             ))}
           </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-            className="mt-10 p-6 glass-card rounded-2xl"
-          >
-            <div className="flex items-center gap-4 mb-3">
-              <img 
-                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=50&h=50&fit=crop&crop=face" 
-                alt="User"
-                className="w-12 h-12 rounded-full border-2 border-primary/30"
-              />
-              <div>
-                <p className="font-semibold">Sarah Mitchell</p>
-                <p className="text-sm text-muted-foreground">Software Engineer at Google</p>
-              </div>
-            </div>
-            <p className="text-sm text-muted-foreground italic">
-              "CareerPath AI helped me transition from a junior role to landing my dream job at Google in just 6 months!"
-            </p>
-          </motion.div>
         </motion.div>
       </div>
     </div>

@@ -155,7 +155,7 @@ export default function Hero() {
                   ))}
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  <span className="text-foreground font-semibold">4.9/5</span> from 2,000+ reviews
+                  <span className="text-foreground font-semibold">50K+</span> professionals guided
                 </p>
               </div>
             </div>
