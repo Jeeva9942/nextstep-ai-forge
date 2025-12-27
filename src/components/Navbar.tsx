@@ -1,10 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Compass, Sparkles, LogOut, User, ClipboardList } from 'lucide-react';
+import { Menu, X, Compass, Sparkles, LogOut, User, ClipboardList, BookOpen, Code, Briefcase, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -28,12 +34,15 @@ export default function Navbar() {
     navigate('/');
   };
 
-  const navLinks = [
+  const mainNavLinks = [
     { name: 'Features', href: '#features' },
     { name: 'How It Works', href: '#how-it-works' },
-    { name: 'Reviews', href: '#reviews' },
-    { name: 'Assessment', href: '/assessment', icon: ClipboardList },
-    { name: 'AI Advisor', href: '/advisor' },
+  ];
+
+  const courseOptions = [
+    { name: 'Programming Languages', href: '/courses/programming' },
+    { name: 'Basics of EEE', href: '/courses/eee' },
+    { name: 'Extra Courses', href: '#extra-courses' },
   ];
 
   return (
@@ -61,26 +70,71 @@ export default function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
-            {navLinks.map((link) => (
+            {mainNavLinks.map((link) => (
               <a
                 key={link.name}
                 href={link.href}
-                className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium relative group py-2 flex items-center gap-1.5"
+                className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium relative group py-2"
                 onClick={(e) => {
-                  if (link.href.startsWith('#')) {
-                    e.preventDefault();
-                    document.querySelector(link.href)?.scrollIntoView({ behavior: 'smooth' });
-                  } else {
-                    e.preventDefault();
-                    navigate(link.href);
-                  }
+                  e.preventDefault();
+                  document.querySelector(link.href)?.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
-                {link.icon && <link.icon className="w-4 h-4" />}
                 {link.name}
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-primary transition-all duration-300 group-hover:w-full rounded-full" />
               </a>
             ))}
+
+            {/* Courses Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium flex items-center gap-1 py-2">
+                <BookOpen className="w-4 h-4" />
+                Courses
+                <ChevronDown className="w-3 h-3" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="glass-card border-border/50">
+                {courseOptions.map((option) => (
+                  <DropdownMenuItem 
+                    key={option.name}
+                    onClick={() => {
+                      if (option.href.startsWith('#')) {
+                        document.querySelector(option.href)?.scrollIntoView({ behavior: 'smooth' });
+                      } else {
+                        navigate(option.href);
+                      }
+                    }}
+                    className="cursor-pointer"
+                  >
+                    {option.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <a
+              href="/assessment"
+              className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium relative group py-2 flex items-center gap-1.5"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/assessment');
+              }}
+            >
+              <ClipboardList className="w-4 h-4" />
+              Assessment
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-primary transition-all duration-300 group-hover:w-full rounded-full" />
+            </a>
+
+            <a
+              href="/advisor"
+              className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium relative group py-2"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/advisor');
+              }}
+            >
+              AI Advisor
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-primary transition-all duration-300 group-hover:w-full rounded-full" />
+            </a>
           </div>
 
           {/* Auth Buttons */}
@@ -138,7 +192,7 @@ export default function Navbar() {
               className="md:hidden overflow-hidden border-t border-border/50"
             >
               <div className="py-6 space-y-4">
-                {navLinks.map((link, i) => (
+                {mainNavLinks.map((link, i) => (
                   <motion.a
                     key={link.name}
                     href={link.href}
@@ -148,21 +202,72 @@ export default function Navbar() {
                     className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium py-2"
                     onClick={(e) => {
                       setIsOpen(false);
-                      if (link.href.startsWith('#')) {
-                        e.preventDefault();
-                        setTimeout(() => {
-                          document.querySelector(link.href)?.scrollIntoView({ behavior: 'smooth' });
-                        }, 300);
-                      } else {
-                        e.preventDefault();
-                        navigate(link.href);
-                      }
+                      e.preventDefault();
+                      setTimeout(() => {
+                        document.querySelector(link.href)?.scrollIntoView({ behavior: 'smooth' });
+                      }, 300);
                     }}
                   >
-                    {link.icon && <link.icon className="w-4 h-4" />}
                     {link.name}
                   </motion.a>
                 ))}
+                
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+                  <p className="text-sm text-muted-foreground mb-2">Courses</p>
+                  {courseOptions.map((option) => (
+                    <a
+                      key={option.name}
+                      href={option.href}
+                      className="block pl-4 py-1 text-muted-foreground hover:text-foreground"
+                      onClick={(e) => {
+                        setIsOpen(false);
+                        if (option.href.startsWith('#')) {
+                          e.preventDefault();
+                          setTimeout(() => {
+                            document.querySelector(option.href)?.scrollIntoView({ behavior: 'smooth' });
+                          }, 300);
+                        } else {
+                          e.preventDefault();
+                          navigate(option.href);
+                        }
+                      }}
+                    >
+                      {option.name}
+                    </a>
+                  ))}
+                </motion.div>
+
+                <motion.a
+                  href="/assessment"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium py-2"
+                  onClick={(e) => {
+                    setIsOpen(false);
+                    e.preventDefault();
+                    navigate('/assessment');
+                  }}
+                >
+                  <ClipboardList className="w-4 h-4" />
+                  Assessment
+                </motion.a>
+
+                <motion.a
+                  href="/advisor"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium py-2"
+                  onClick={(e) => {
+                    setIsOpen(false);
+                    e.preventDefault();
+                    navigate('/advisor');
+                  }}
+                >
+                  AI Advisor
+                </motion.a>
+
                 <div className="flex flex-col gap-3 pt-4 border-t border-border/50">
                   {user ? (
                     <>
