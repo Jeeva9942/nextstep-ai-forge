@@ -1,16 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Compass, Sparkles, LogOut, User, ClipboardList, BookOpen, Code, Briefcase, ChevronDown } from 'lucide-react';
+import { Menu, X, Compass, Sparkles, LogOut, User, ClipboardList, BookOpen, Briefcase } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,11 +33,11 @@ export default function Navbar() {
     { name: 'How It Works', href: '#how-it-works' },
   ];
 
-  const courseOptions = [
-    { name: 'Programming Languages', href: '/courses/programming' },
-    { name: 'Basics of EEE', href: '/courses/eee' },
-    { name: 'Extra Courses', href: '#extra-courses' },
-  ];
+  const scrollToSection = (href: string) => {
+    if (href.startsWith('#')) {
+      document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-nav">
@@ -77,7 +71,7 @@ export default function Navbar() {
                 className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium relative group py-2"
                 onClick={(e) => {
                   e.preventDefault();
-                  document.querySelector(link.href)?.scrollIntoView({ behavior: 'smooth' });
+                  scrollToSection(link.href);
                 }}
               >
                 {link.name}
@@ -85,32 +79,35 @@ export default function Navbar() {
               </a>
             ))}
 
-            {/* Courses Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium flex items-center gap-1 py-2">
-                <BookOpen className="w-4 h-4" />
-                Courses
-                <ChevronDown className="w-3 h-3" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="glass-card border-border/50">
-                {courseOptions.map((option) => (
-                  <DropdownMenuItem 
-                    key={option.name}
-                    onClick={() => {
-                      if (option.href.startsWith('#')) {
-                        document.querySelector(option.href)?.scrollIntoView({ behavior: 'smooth' });
-                      } else {
-                        navigate(option.href);
-                      }
-                    }}
-                    className="cursor-pointer"
-                  >
-                    {option.name}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Courses Link */}
+            <a
+              href="#extra-courses"
+              className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium relative group py-2 flex items-center gap-1.5"
+              onClick={(e) => {
+                e.preventDefault();
+                scrollToSection('#extra-courses');
+              }}
+            >
+              <BookOpen className="w-4 h-4" />
+              Courses
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-primary transition-all duration-300 group-hover:w-full rounded-full" />
+            </a>
 
+            {/* Freelancing Link */}
+            <a
+              href="#freelance-jobs"
+              className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium relative group py-2 flex items-center gap-1.5"
+              onClick={(e) => {
+                e.preventDefault();
+                scrollToSection('#freelance-jobs');
+              }}
+            >
+              <Briefcase className="w-4 h-4" />
+              Freelancing
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-primary transition-all duration-300 group-hover:w-full rounded-full" />
+            </a>
+
+            {/* Assessment Link */}
             <a
               href="/assessment"
               className="text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium relative group py-2 flex items-center gap-1.5"
@@ -203,39 +200,44 @@ export default function Navbar() {
                     onClick={(e) => {
                       setIsOpen(false);
                       e.preventDefault();
-                      setTimeout(() => {
-                        document.querySelector(link.href)?.scrollIntoView({ behavior: 'smooth' });
-                      }, 300);
+                      setTimeout(() => scrollToSection(link.href), 300);
                     }}
                   >
                     {link.name}
                   </motion.a>
                 ))}
                 
-                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
-                  <p className="text-sm text-muted-foreground mb-2">Courses</p>
-                  {courseOptions.map((option) => (
-                    <a
-                      key={option.name}
-                      href={option.href}
-                      className="block pl-4 py-1 text-muted-foreground hover:text-foreground"
-                      onClick={(e) => {
-                        setIsOpen(false);
-                        if (option.href.startsWith('#')) {
-                          e.preventDefault();
-                          setTimeout(() => {
-                            document.querySelector(option.href)?.scrollIntoView({ behavior: 'smooth' });
-                          }, 300);
-                        } else {
-                          e.preventDefault();
-                          navigate(option.href);
-                        }
-                      }}
-                    >
-                      {option.name}
-                    </a>
-                  ))}
-                </motion.div>
+                <motion.a
+                  href="#extra-courses"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium py-2"
+                  onClick={(e) => {
+                    setIsOpen(false);
+                    e.preventDefault();
+                    setTimeout(() => scrollToSection('#extra-courses'), 300);
+                  }}
+                >
+                  <BookOpen className="w-4 h-4" />
+                  Courses
+                </motion.a>
+
+                <motion.a
+                  href="#freelance-jobs"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.25 }}
+                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium py-2"
+                  onClick={(e) => {
+                    setIsOpen(false);
+                    e.preventDefault();
+                    setTimeout(() => scrollToSection('#freelance-jobs'), 300);
+                  }}
+                >
+                  <Briefcase className="w-4 h-4" />
+                  Freelancing
+                </motion.a>
 
                 <motion.a
                   href="/assessment"
@@ -257,7 +259,7 @@ export default function Navbar() {
                   href="/advisor"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 }}
+                  transition={{ delay: 0.35 }}
                   className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium py-2"
                   onClick={(e) => {
                     setIsOpen(false);
