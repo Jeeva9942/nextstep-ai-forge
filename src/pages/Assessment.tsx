@@ -5,8 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Compass, ArrowLeft, ArrowRight, Loader2, Sparkles, User, Briefcase, GraduationCap, Target, Brain } from 'lucide-react';
+import { Compass, ArrowLeft, ArrowRight, Loader2, Sparkles, User, Briefcase, GraduationCap, Target, Brain, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 
@@ -22,12 +21,24 @@ const interestOptions = [
   'Entrepreneurship', 'Non-profit', 'Government', 'Research'
 ];
 
+type ValidationErrors = {
+  name?: boolean;
+  age?: boolean;
+  education?: boolean;
+  experience?: boolean;
+  skills?: boolean;
+  interests?: boolean;
+  goals?: boolean;
+};
+
 export default function Assessment() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [attemptedNext, setAttemptedNext] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -45,6 +56,46 @@ export default function Assessment() {
 
   const totalSteps = 4;
 
+  const validateStep = (currentStep: number): boolean => {
+    const newErrors: ValidationErrors = {};
+    
+    switch (currentStep) {
+      case 1:
+        if (!formData.name.trim()) newErrors.name = true;
+        if (!formData.age.trim()) newErrors.age = true;
+        if (!formData.education) newErrors.education = true;
+        if (!formData.experience) newErrors.experience = true;
+        break;
+      case 2:
+        if (formData.skills.length === 0) newErrors.skills = true;
+        break;
+      case 3:
+        if (formData.interests.length === 0) newErrors.interests = true;
+        break;
+      case 4:
+        if (!formData.goals.trim()) newErrors.goals = true;
+        break;
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = () => {
+    setAttemptedNext(true);
+    if (validateStep(step)) {
+      setStep(s => s + 1);
+      setAttemptedNext(false);
+      setErrors({});
+    } else {
+      toast({ 
+        title: 'Required Fields Missing', 
+        description: 'Please fill in all required fields before continuing.', 
+        variant: 'destructive' 
+      });
+    }
+  };
+
   const handleSkillToggle = (skill: string) => {
     setFormData(prev => ({
       ...prev,
@@ -52,6 +103,9 @@ export default function Assessment() {
         ? prev.skills.filter(s => s !== skill)
         : [...prev.skills, skill]
     }));
+    if (errors.skills) {
+      setErrors(prev => ({ ...prev, skills: false }));
+    }
   };
 
   const handleInterestToggle = (interest: string) => {
@@ -61,10 +115,14 @@ export default function Assessment() {
         ? prev.interests.filter(i => i !== interest)
         : [...prev.interests, interest]
     }));
+    if (errors.interests) {
+      setErrors(prev => ({ ...prev, interests: false }));
+    }
   };
 
   const handleSubmit = async () => {
-    if (!formData.name || !formData.goals) {
+    setAttemptedNext(true);
+    if (!validateStep(4)) {
       toast({ title: 'Missing Information', description: 'Please fill in all required fields.', variant: 'destructive' });
       return;
     }
@@ -91,7 +149,8 @@ Please provide:
 2. Skills they should develop
 3. Actionable next steps they can take immediately
 4. Resources or certifications that would help
-5. Potential salary ranges for recommended careers
+5. Potential salary ranges for recommended careers in Indian Rupees (₹)
+6. Risk indicators for each career path (FUTURE-FOCUSED, MODERATE RISK, or HIGH RISK)
 
 Keep the response clear, encouraging, and actionable.`;
 
@@ -167,29 +226,63 @@ Keep the response clear, encouraging, and actionable.`;
 
             <div className="grid gap-4">
               <div className="space-y-2">
-                <Label>Full Name *</Label>
-                <Input 
-                  placeholder="Enter your name" 
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  className="h-12"
-                />
+                <Label className="flex items-center gap-1">
+                  Full Name <span className="text-destructive">*</span>
+                </Label>
+                <div className="relative">
+                  <Input 
+                    placeholder="Enter your name" 
+                    value={formData.name}
+                    onChange={(e) => {
+                      setFormData(prev => ({ ...prev, name: e.target.value }));
+                      if (errors.name) setErrors(prev => ({ ...prev, name: false }));
+                    }}
+                    className={`h-12 ${errors.name && attemptedNext ? 'border-destructive ring-1 ring-destructive' : ''}`}
+                  />
+                  {errors.name && attemptedNext && (
+                    <div className="flex items-center gap-1 mt-1 text-destructive text-xs">
+                      <AlertCircle className="w-3 h-3" />
+                      Please fill this field
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Age</Label>
-                  <Input 
-                    type="number" 
-                    placeholder="Your age" 
-                    value={formData.age}
-                    onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))}
-                    className="h-12"
-                  />
+                  <Label className="flex items-center gap-1">
+                    Age <span className="text-destructive">*</span>
+                  </Label>
+                  <div className="relative">
+                    <Input 
+                      type="number" 
+                      placeholder="Your age" 
+                      value={formData.age}
+                      onChange={(e) => {
+                        setFormData(prev => ({ ...prev, age: e.target.value }));
+                        if (errors.age) setErrors(prev => ({ ...prev, age: false }));
+                      }}
+                      className={`h-12 ${errors.age && attemptedNext ? 'border-destructive ring-1 ring-destructive' : ''}`}
+                    />
+                    {errors.age && attemptedNext && (
+                      <div className="flex items-center gap-1 mt-1 text-destructive text-xs">
+                        <AlertCircle className="w-3 h-3" />
+                        Please fill this field
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Education Level</Label>
-                  <Select value={formData.education} onValueChange={(v) => setFormData(prev => ({ ...prev, education: v }))}>
-                    <SelectTrigger className="h-12">
+                  <Label className="flex items-center gap-1">
+                    Education Level <span className="text-destructive">*</span>
+                  </Label>
+                  <Select 
+                    value={formData.education} 
+                    onValueChange={(v) => {
+                      setFormData(prev => ({ ...prev, education: v }));
+                      if (errors.education) setErrors(prev => ({ ...prev, education: false }));
+                    }}
+                  >
+                    <SelectTrigger className={`h-12 ${errors.education && attemptedNext ? 'border-destructive ring-1 ring-destructive' : ''}`}>
                       <SelectValue placeholder="Select level" />
                     </SelectTrigger>
                     <SelectContent>
@@ -201,13 +294,27 @@ Keep the response clear, encouraging, and actionable.`;
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
+                  {errors.education && attemptedNext && (
+                    <div className="flex items-center gap-1 mt-1 text-destructive text-xs">
+                      <AlertCircle className="w-3 h-3" />
+                      Please fill this field
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Years of Experience</Label>
-                  <Select value={formData.experience} onValueChange={(v) => setFormData(prev => ({ ...prev, experience: v }))}>
-                    <SelectTrigger className="h-12">
+                  <Label className="flex items-center gap-1">
+                    Years of Experience <span className="text-destructive">*</span>
+                  </Label>
+                  <Select 
+                    value={formData.experience} 
+                    onValueChange={(v) => {
+                      setFormData(prev => ({ ...prev, experience: v }));
+                      if (errors.experience) setErrors(prev => ({ ...prev, experience: false }));
+                    }}
+                  >
+                    <SelectTrigger className={`h-12 ${errors.experience && attemptedNext ? 'border-destructive ring-1 ring-destructive' : ''}`}>
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectContent>
@@ -217,6 +324,12 @@ Keep the response clear, encouraging, and actionable.`;
                       <SelectItem value="10+">10+ years</SelectItem>
                     </SelectContent>
                   </Select>
+                  {errors.experience && attemptedNext && (
+                    <div className="flex items-center gap-1 mt-1 text-destructive text-xs">
+                      <AlertCircle className="w-3 h-3" />
+                      Please fill this field
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>Current Role</Label>
@@ -246,9 +359,16 @@ Keep the response clear, encouraging, and actionable.`;
               </div>
               <div>
                 <h2 className="font-display text-xl font-bold">Your Skills</h2>
-                <p className="text-sm text-muted-foreground">Select all skills you have</p>
+                <p className="text-sm text-muted-foreground">Select all skills you have <span className="text-destructive">*</span></p>
               </div>
             </div>
+
+            {errors.skills && attemptedNext && (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm">
+                <AlertCircle className="w-4 h-4" />
+                Please select at least one skill
+              </div>
+            )}
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {skillOptions.map((skill) => (
@@ -258,7 +378,7 @@ Keep the response clear, encouraging, and actionable.`;
                   className={`p-3 rounded-xl border cursor-pointer transition-all duration-200 text-center text-sm font-medium ${
                     formData.skills.includes(skill)
                       ? 'bg-primary/20 border-primary text-primary'
-                      : 'bg-secondary/50 border-border hover:border-primary/50'
+                      : `bg-secondary/50 border-border hover:border-primary/50 ${errors.skills && attemptedNext ? 'border-destructive/50' : ''}`
                   }`}
                 >
                   {skill}
@@ -285,9 +405,16 @@ Keep the response clear, encouraging, and actionable.`;
               </div>
               <div>
                 <h2 className="font-display text-xl font-bold">Your Interests</h2>
-                <p className="text-sm text-muted-foreground">Select industries that interest you</p>
+                <p className="text-sm text-muted-foreground">Select industries that interest you <span className="text-destructive">*</span></p>
               </div>
             </div>
+
+            {errors.interests && attemptedNext && (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm">
+                <AlertCircle className="w-4 h-4" />
+                Please select at least one interest
+              </div>
+            )}
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {interestOptions.map((interest) => (
@@ -297,7 +424,7 @@ Keep the response clear, encouraging, and actionable.`;
                   className={`p-3 rounded-xl border cursor-pointer transition-all duration-200 text-center text-sm font-medium ${
                     formData.interests.includes(interest)
                       ? 'bg-primary/20 border-primary text-primary'
-                      : 'bg-secondary/50 border-border hover:border-primary/50'
+                      : `bg-secondary/50 border-border hover:border-primary/50 ${errors.interests && attemptedNext ? 'border-destructive/50' : ''}`
                   }`}
                 >
                   {interest}
@@ -330,13 +457,24 @@ Keep the response clear, encouraging, and actionable.`;
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Career Goals *</Label>
+                <Label className="flex items-center gap-1">
+                  Career Goals <span className="text-destructive">*</span>
+                </Label>
                 <Textarea 
                   placeholder="What do you want to achieve in your career? Where do you see yourself in 5 years?"
                   value={formData.goals}
-                  onChange={(e) => setFormData(prev => ({ ...prev, goals: e.target.value }))}
-                  className="min-h-24 resize-none"
+                  onChange={(e) => {
+                    setFormData(prev => ({ ...prev, goals: e.target.value }));
+                    if (errors.goals) setErrors(prev => ({ ...prev, goals: false }));
+                  }}
+                  className={`min-h-24 resize-none ${errors.goals && attemptedNext ? 'border-destructive ring-1 ring-destructive' : ''}`}
                 />
+                {errors.goals && attemptedNext && (
+                  <div className="flex items-center gap-1 mt-1 text-destructive text-xs">
+                    <AlertCircle className="w-3 h-3" />
+                    Please fill this field
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Current Challenges</Label>
@@ -369,6 +507,8 @@ Keep the response clear, encouraging, and actionable.`;
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="10-50K">₹10K - ₹50K</SelectItem>
+                      <SelectItem value="50K-3L">₹50K - ₹3L</SelectItem>
                       <SelectItem value="3-5L">₹3L - ₹5L</SelectItem>
                       <SelectItem value="5-8L">₹5L - ₹8L</SelectItem>
                       <SelectItem value="8-12L">₹8L - ₹12L</SelectItem>
@@ -427,7 +567,7 @@ Keep the response clear, encouraging, and actionable.`;
             </div>
 
             <div className="flex gap-4 mt-8 pt-6 border-t border-border">
-              <Button variant="outline" onClick={() => { setResult(null); setStep(1); }} className="flex-1">
+              <Button variant="outline" onClick={() => { setResult(null); setStep(1); setErrors({}); setAttemptedNext(false); }} className="flex-1">
                 Start New Assessment
               </Button>
               <Button variant="hero" onClick={() => navigate('/advisor')} className="flex-1">
@@ -485,7 +625,7 @@ Keep the response clear, encouraging, and actionable.`;
             {step > 1 && (
               <Button 
                 variant="outline" 
-                onClick={() => setStep(s => s - 1)}
+                onClick={() => { setStep(s => s - 1); setAttemptedNext(false); setErrors({}); }}
                 className="flex-1"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -496,7 +636,7 @@ Keep the response clear, encouraging, and actionable.`;
             {step < totalSteps ? (
               <Button 
                 variant="hero" 
-                onClick={() => setStep(s => s + 1)}
+                onClick={handleNext}
                 className="flex-1"
               >
                 Next
