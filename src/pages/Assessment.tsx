@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Compass, ArrowLeft, ArrowRight, Loader2, Sparkles, User, Briefcase, GraduationCap, Target, Brain, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const skillOptions = [
   'JavaScript', 'Python', 'Java', 'C++', 'React', 'Node.js', 'SQL', 'Machine Learning',
@@ -197,6 +198,27 @@ Keep the response clear, encouraging, and actionable.`;
           }
         }
       }
+
+      // Save to database
+      const cleanedFinal = fullResponse
+        .replace(/\*\*/g, '').replace(/\*/g, '')
+        .replace(/#{1,6}\s/g, '').replace(/`/g, '');
+      
+      await supabase.from('career_assessments').insert({
+        full_name: formData.name,
+        age: formData.age,
+        education: formData.education,
+        experience: formData.experience,
+        role_title: formData.currentRole || null,
+        skills: formData.skills,
+        interests: formData.interests,
+        goals: formData.goals,
+        challenges: formData.challenges || null,
+        preferred_work_style: formData.preferredWorkStyle || null,
+        salary_expectation: formData.salaryExpectation || null,
+        ai_recommendation: cleanedFinal,
+      });
+
     } catch (error) {
       toast({ title: 'Error', description: 'Failed to get AI recommendations. Please try again.', variant: 'destructive' });
     } finally {
@@ -560,10 +582,35 @@ Keep the response clear, encouraging, and actionable.`;
               </div>
             </div>
 
-            <div className="prose prose-invert max-w-none">
-              <div className="whitespace-pre-wrap text-foreground leading-relaxed">
-                {result}
-              </div>
+            <div className="space-y-4">
+              {result.split('\n').map((line, i) => {
+                const trimmed = line.trim();
+                if (!trimmed) return <div key={i} className="h-2" />;
+                
+                // Detect numbered headings like "1. Top 3..." or section titles
+                const isHeading = /^\d+[\.\)]\s/.test(trimmed) || 
+                  /^(Top|Skills|Actionable|Resources|Potential|Risk|Career|Recommended|Summary)/i.test(trimmed);
+                
+                if (isHeading) {
+                  return (
+                    <h3 key={i} className="font-display text-lg font-bold text-primary mt-6 mb-2 uppercase tracking-wide border-b border-border pb-2">
+                      {trimmed}
+                    </h3>
+                  );
+                }
+                
+                // Bullet points
+                if (trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.startsWith('–')) {
+                  return (
+                    <div key={i} className="flex items-start gap-2 ml-4">
+                      <span className="text-primary mt-1">•</span>
+                      <p className="text-foreground leading-relaxed">{trimmed.replace(/^[•\-–]\s*/, '')}</p>
+                    </div>
+                  );
+                }
+                
+                return <p key={i} className="text-foreground leading-relaxed">{trimmed}</p>;
+              })}
             </div>
 
             <div className="flex gap-4 mt-8 pt-6 border-t border-border">
