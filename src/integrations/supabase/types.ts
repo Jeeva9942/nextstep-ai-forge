@@ -30,6 +30,7 @@ export type Database = {
           role_title: string | null
           salary_expectation: string | null
           skills: string[] | null
+          user_id: string | null
         }
         Insert: {
           age?: string | null
@@ -46,6 +47,7 @@ export type Database = {
           role_title?: string | null
           salary_expectation?: string | null
           skills?: string[] | null
+          user_id?: string | null
         }
         Update: {
           age?: string | null
@@ -62,6 +64,7 @@ export type Database = {
           role_title?: string | null
           salary_expectation?: string | null
           skills?: string[] | null
+          user_id?: string | null
         }
         Relationships: []
       }

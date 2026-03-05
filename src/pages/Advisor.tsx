@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Compass, Send, ArrowLeft, Bot, User, Loader2, Download, FileText, File, Map, Tag, Award, ExternalLink, TrendingUp, Briefcase, Linkedin, Search, Brain, Zap, Target, AlertCircle } from 'lucide-react';
@@ -235,6 +236,17 @@ export default function Advisor() {
   const [linkedInJobs, setLinkedInJobs] = useState<ReturnType<typeof generateLinkedInJobs>>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  // Auth guard
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session?.user) navigate('/auth');
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      if (!session?.user) navigate('/auth');
+    });
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
