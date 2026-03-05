@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,6 +40,30 @@ export default function Assessment() {
   const [result, setResult] = useState<string | null>(null);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [attemptedNext, setAttemptedNext] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // Require authentication
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        toast({ title: 'Sign in required', description: 'Please sign in to take the assessment.', variant: 'destructive' });
+        navigate('/auth');
+        return;
+      }
+      setUserId(session.user.id);
+    };
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      if (!session?.user) {
+        navigate('/auth');
+      } else {
+        setUserId(session.user.id);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [navigate, toast]);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -205,6 +229,7 @@ Keep the response clear, encouraging, and actionable.`;
         .replace(/#{1,6}\s/g, '').replace(/`/g, '');
       
       await supabase.from('career_assessments').insert({
+        user_id: userId,
         full_name: formData.name,
         age: formData.age,
         education: formData.education,
